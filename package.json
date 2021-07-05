@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/AcChrome/tinyapp/issues"
   },
-  "homepage": "https://github.com/AcChrome/tinyapp#readme"
+  "homepage": "https://github.com/AcChrome/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
