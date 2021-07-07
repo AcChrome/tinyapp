@@ -46,6 +46,13 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL];
+  console.log(urlDatabase[shortURL]);
+  res.redirect('/urls');
+})
+
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
@@ -66,9 +73,25 @@ const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.p
   res.render("urls_show", templateVars);
 });
 
-
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
+
+// req.body -> {input1: 'hello worlds', }
+/*
+<form method="POST" action="/urls/:shortURL/:myVariable">
+  <input type="text" name="input1" />
+  <input type="text" name="input2" />
+  <button type="submit">Submit</button>
+</form>
+*/
+
+
+// req.params -> {shortURL: 'hello', myVariable: 'world'}
+
+// visit /urls/hello/world
+// app.post("/urls/:shortURL/:myVariable", (req, res) => {
+//   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+//   res.render("urls_show", templateVars);
+// });
