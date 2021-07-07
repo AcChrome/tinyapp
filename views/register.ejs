@@ -7,18 +7,17 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 
-    <title>New URL - TinyApp Example</title>
+    <title>Register</title>
   </head>
   <body>
-    <header>
-      <%- include('partials/_header') %>
-    </header>
-    <main style="margin: 1em;">
-      <h3>Create TinyURL</h3>
-      <form class="form-inline" action="/urls" method="POST">
+    <main style="margin: lem">
+      <h2 style="text-align: center">Create New Account</h2>
+      <form class="form-inline" action="/register" method="POST">
         <div class="form-group mb-2">
-          <label for="longURL">Enter a URL:</label>
-          <input class="form-control" type="text" name="longURL" value="http://" style="width: 300px; margin: 1em">
+          <label for="email" >E-mail:</label>
+          <input class="form-control" type="email" name="email" style="width: 300px; margin: 1em"/>
+          <label for="password">Password:</label>
+          <input class="form-control" type="password" required name="password" style="width: 300px; margin: 1em"/>
           <button type="submit" class="btn btn-primary">Submit</button>
         </div>
       </form>

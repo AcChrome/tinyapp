@@ -9,10 +9,10 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" style="margin: 0 1200px 0 0" href="/urls/new">Create New URL</a>
-        <% if (username) {%>
-          <h1>
-            <%= username %>
-          </h1>
+        <% if (user) {%>
+          <h3 style = "color: #3D3D3D">
+            <%= user.id %>
+          </h3>
           <% } else {%>
             <form method="POST" action="/urls/login">
               <input style="border-color: transparent; color:grey; border-radius: 4px; margin:0 10px 0 0" type="text"
