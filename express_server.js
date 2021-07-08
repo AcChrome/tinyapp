@@ -67,16 +67,39 @@ app.get("/register", (req, res) => {
   res.render('register');
 });
 
+app.get("/login", (req, res) => {
+  res.render('login');
+});
+
+app.post("/login", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  if (!email || !password) {
+    return res.status(403).send('e-mail or password is invalid');
+  }
+  const user = findEmail(email) 
+  if (!user) {
+    return res.status(403).send('e-mail is not register');
+  }
+  if (user.password !== password) {
+    return res.status(403).send('password is invalid');
+  }
+  res.cookie('users_Id', id);
+  res.redirect('/urls');
+});
+
+
+
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
   if (!email || !password) {
-    return res.status(400).send('e-mail or password is invalid');
+    return res.status(403).send('e-mail or password is invalid');
   }
   const user = findEmail(email);
   if (user) {
-    return res.status(400).send('email already used');
+    return res.status(403).send('email already used');
   }
   const id = generateRandomString();
   users[id] = {
@@ -85,14 +108,14 @@ app.post("/register", (req, res) => {
     password
   };
   res.cookie('users_Id', id);
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 app.post("/urls", (req, res) => {
-  let shortURL = generateRandomString();
-  let longURL = req.body.longURL;
-  urlDatabase[shortURL] = longURL;
-  res.redirect(`/urls/${shortURL}`);
+  // let shortURL = generateRandomString();
+  // let longURL = req.body.longURL;
+  // urlDatabase[shortURL] = longURL;
+  res.redirect('/register');
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -109,11 +132,11 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   res.redirect('/urls');
 });
 
-app.post("/urls/login", (req, res) => {
-  res.cookie('users_Id', id);
-  console.log(req.cookies);
-  res.redirect('/urls'); 
-});
+// app.post("/urls/login", (req, res) => {
+//   res.cookie('users_Id', id);
+//   console.log(req.cookies);
+//   res.redirect('/urls'); 
+// });
 
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
