@@ -14,8 +14,14 @@ app.use(morgan('dev'));
 
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "default"
+  },
+  "9sm5xK": { 
+    longURL: "http://www.google.com",
+    userID: "default"
+  }
 };
 
 const users = {
@@ -78,7 +84,6 @@ app.get("/login", (req, res) => {
     user: null
   };
   if (req.cookies['userId']) {
-    console.log(req.cookies["userId"]);
     return res.redirect('/urls');
   }
   res.render('login', templateVars);
@@ -97,7 +102,7 @@ app.post("/login", (req, res) => {
   if (user.password !== password) {
     return res.status(403).send('password is invalid');
   }
-  console.log('user:', user);
+  // console.log('user:', user);
   res.cookie('userId', user.id);
   res.redirect('/urls');
 });
@@ -124,22 +129,26 @@ app.post("/register", (req, res) => {
   res.redirect('/login');
 });
 
-app.post("/logout", (req, res) => {
-  res.clearCookie('userId')
-  res.redirect('/urls');
+app.post("/urls/new", (req, res) => {
+  if (req.cookies['userId']) {
+    return res.redirect('/urls');
+  }
+  res.redirect('/urls/news');
 })
 
+
 app.post("/urls", (req, res) => {
-  // let shortURL = generateRandomString();
-  // let longURL = req.body.longURL;
-  // urlDatabase[shortURL] = longURL;
-  res.redirect('/register');
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = {
+    longURL,
+    userID
+  }
+  res.redirect('/urls');
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
-  // console.log(urlDatabase[shortURL]);
   res.redirect('/urls');
 });
 
@@ -150,42 +159,60 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   res.redirect('/urls');
 });
 
-// app.post("/urls/login", (req, res) => {
-//   res.cookie('userId', id);
-//   console.log(req.cookies);
-//   res.redirect('/urls'); 
-// });
-
-app.get("/u/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
-  res.redirect(longURL);
+app.post("/urls/login", (req, res) => {
+  res.cookie('userId', id);
+  console.log(req.cookies);
+  res.redirect('/urls'); 
 });
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[req.params.shortURL].longURL,
+    userID: null,
     user: getUser(users, req.cookies['userId'])
   };
+  if (!req.cookies['userId']) {
+    return res.redirect('/urls');
+  }
   res.render("urls_new", templateVars);
 });
 
+app.get("/u/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[req.params.shortURL].longURL;
+  const userID = users.user;
+  res.redirect(longURL);
+});
+
+
 app.get("/urls", (req, res) => {
-  const templateVars = { 
+  const templateVars = {
+    shortURL: urlDatabase.shortURL,
+    longURL: null,
+    userID: null,
     urls: urlDatabase,
     user: getUser(users, req.cookies['userId'])
-   };
-   console.log('req.cookies:', req.cookies['userId']);
-  console.log(templateVars.user);
+  };
+  console.log('reqparms:', templateVars);
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-const templateVars = { shortURL: req.params.shortURL, 
-  longURL: urlDatabase[req.params.shortURL], 
-  user: getUser(users, req.cookies['userId'])
-};
+  const templateVars = { 
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[req.params.shortURL].longURL,
+    userID: urlDatabase[req.params.shortURL].userID,
+    user: getUser(users, req.cookies['userId'])
+  };
+  console.log('template:',templateVars);
   res.render("urls_show", templateVars);
 });
+
+app.post("/logout", (req, res) => {
+  res.clearCookie('userId')
+  res.redirect('/urls');
+})
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -195,9 +222,9 @@ app.listen(PORT, () => {
 // req.body -> {input1: 'hello worlds', }
 /*
 <form method="POST" action="/urls/:shortURL/:myVariable">
-  <input type="text" name="input1" />
-  <input type="text" name="input2" />
-  <button type="submit">Submit</button>
+<input type="text" name="input1" />
+<input type="text" name="input2" />
+<button type="submit">Submit</button>
 </form>
 */
 
@@ -206,6 +233,6 @@ app.listen(PORT, () => {
 
 // visit /urls/hello/world
 // app.post("/urls/:shortURL/:myVariable", (req, res) => {
-//   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
-//   res.render("urls_show", templateVars);
+  //   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  //   res.render("urls_show", templateVars);
 // });
