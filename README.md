@@ -6,7 +6,7 @@ TinyApp was built using Node and Express. This application is made to enhance us
 
 !["create account"](https://github.com/AcChrome/tinyapp/blob/master/docs/CreateAccount.png?raw=true)
 
-!["homepage with url"](https://github.com/AcChrome/tinyapp/blob/master/docs/FrontPageUrl.png?raw=true)
+!["homepage with url"](https://github.com/AcChrome/tinyapp/blob/master/docs/frontPageWithUrl.png?raw=true)
 
 !["edit url"](https://github.com/AcChrome/tinyapp/blob/master/docs/editUrl.png?raw=true)
 
