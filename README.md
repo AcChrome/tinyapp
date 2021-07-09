@@ -6,9 +6,9 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 !["create account"](https://github.com/AcChrome/tinyapp/blob/master/docs/CreateAccount.png?raw=true)
 
-!["screenshot description"](#)
+!["homepage with url"](https://github.com/AcChrome/tinyapp/blob/master/docs/FrontPageUrl.png?raw=true)
 
-!["screenshot description"](#)
+!["edit url"](https://github.com/AcChrome/tinyapp/blob/master/docs/editUrl.png?raw=true)
 
 ## Dependencies
 
