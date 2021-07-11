@@ -146,10 +146,11 @@ app.post("/register", (req, res) => {
     return res.status(403).send("e-mail or password is invalid");
   }
   const user = findEmail(email, users);
-  // Check if e-mail is used
+  // Check if e-mail is used 
   if (user) {
     return res.status(403).send("email already used");
   }
+  // Creates a random user iq as well as hashes the password for security
   const id = generateRandomString();
   bcrypt.genSalt(10, (err, salt) => {
     bcrypt.hash(password, salt, (err, hash) => {
@@ -163,7 +164,7 @@ app.post("/register", (req, res) => {
   });
 });
 
-// POST request to view create new url
+// POST request to access page to create new URL
 app.post("/urls/new", (req, res) => {
   const shortURL = req.params.shortURL;
   const newURL = req.body.newURL;
@@ -171,7 +172,7 @@ app.post("/urls/new", (req, res) => {
   res.redirect("/urls");
 });
 
-// POST request page to view urls made by current user
+// POST request page to view URLS made by current user 
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
   let longURL = req.body.longURL;
@@ -182,18 +183,19 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-// POST request to delete short url
+// POST request to delete short url with delete button
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
 
-// POST request to edit url
+// POST request to edit short URL
 app.post("/urls/:shortURL/edit", (req, res) => {
   const shortURL = req.params.shortURL;
   const newURL = req.body.newURL;
   let currentUser = req.session["userId"];
+  // condition to deny access if no user is logged in
   if (currentUser === urlDatabase[shortURL].userID) {
     urlDatabase[shortURL].longURL = newURL;
   } else {
@@ -202,7 +204,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   res.redirect("/urls");
 });
 
-// POST request for logging out
+// POST request for logging out and automatically brings us back to login page
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/login");
