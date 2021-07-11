@@ -26,15 +26,28 @@ app.use(morgan("dev"));
 app.use(
   cookieSession({
     name: "session",
-    //Using tweo session key
+    //Using two session key
     keys: ["key1", "key2"],
   })
 );
 
 // GET request directly to homepage
+// app.get("/", (req, res) => {
+//   res.redirect("/urls");
+// });
+
 app.get("/", (req, res) => {
-  res.redirect("/urls");
+  const templateVars = {
+    userID: null,
+    user: getUser(users, req.session["user_id"]),
+  };
+  // redirect to login page if no existing user is logged in
+  if (req.session["user_id"]) {
+    return res.redirect("/urls");
+  }
+  res.render("login", templateVars);
 });
+
 
 // GET request to view homepage
 app.get("/urls", (req, res) => {
