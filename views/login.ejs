@@ -17,25 +17,23 @@
     <h1 style="text-align: center">Login here!</h1>
     <h2>For new users! <a href="/register">Register now!</a></h2>
 
-    <form method="POST" action="/login">
-      <div>
-        <label for="email">E-mail:</label>
-        <input
-          class="form-control"
-          type="email"
-          name="email"
-          style="width: 200px; margin: lem"
-        />
-        <br />
-        <label for="password">Password:</label>
-        <input
-          class="form-control"
-          type="password"
-          required
-          name="password"
-          style="width: 200px; margin: 1em"
-        />
-        <br />
+        <form class="form-inline" action="/login" method="POST">
+          <div class="form-group mb-2">
+            <label for="email">E-mail:</label>
+            <input
+              class="form-control"
+              type="email"
+              name="email"
+              style="width: 300px; margin: 1em"
+            />
+            <label for="password">Password:</label>
+            <input
+              class="form-control"
+              type="password"
+              required
+              name="password"
+              style="width: 300px; margin: 1em"
+            />
         <button type="submit">Login!</button>
       </div>
     </form>

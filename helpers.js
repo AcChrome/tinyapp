@@ -18,7 +18,6 @@ const users = {
 };
 
 const findEmail = (email, database) => {
-  console.log("databasefindemail:", database);
   for (const usersId in database) {
     const user = database[usersId];
     if (user.email === email) {
@@ -28,6 +27,7 @@ const findEmail = (email, database) => {
   return null;
 };
 
+// Generates random ID for user and shortURL
 function generateRandomString() {
   let result = "";
   let alphaNum =
