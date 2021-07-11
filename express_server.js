@@ -6,6 +6,7 @@ const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080;
+// imported helper functions
 const {
   urlDatabase,
   users,
@@ -37,7 +38,7 @@ app.get("/", (req, res) => {
 
 // GET request to view homepage
 app.get("/urls", (req, res) => {
-  let currentUser = req.session["userId"];
+  let currentUser = req.session["user_id"];
   let userUrl = {};
   // Only allows signed in user to view their own URL
   for (const short in urlDatabase) {
@@ -47,7 +48,7 @@ app.get("/urls", (req, res) => {
   }
   const templateVars = {
     urls: userUrl,
-    user: getUser(users, req.session["userId"]),
+    user: getUser(users, req.session["user_id"]),
   };
   res.render("urls_index", templateVars);
 });
@@ -58,7 +59,7 @@ app.post("/urls", (req, res) => {
   let longURL = req.body.longURL;
   urlDatabase[shortURL] = {
     longURL,
-    userID: req.session["userId"],
+    userID: req.session["user_id"],
   };
   res.redirect(`/urls/${shortURL}`);
 });
@@ -69,7 +70,7 @@ app.get("/register", (req, res) => {
     user: null,
   };
   // Redirect to homepage once logged in
-  if (req.session["userId"]) {
+  if (req.session["user_id"]) {
     return res.redirect("/urls");
   }
   res.render("register", templateVars);
@@ -97,7 +98,7 @@ app.post("/register", (req, res) => {
         email,
         password: hash,
       };
-      res.redirect("/login");
+      res.redirect("/urls");
     });
   });
 });
@@ -108,7 +109,7 @@ app.get("/login", (req, res) => {
     user: null,
   };
   // Redirect to homepage after logged in successfully
-  if (req.session["userId"]) {
+  if (req.session["user_id"]) {
     return res.redirect("/urls");
   }
   res.render("login", templateVars);
@@ -133,7 +134,7 @@ app.post("/login", (req, res) => {
     if (!result) {
       return res.status(403).send("password is invalid");
     }
-    req.session.userId = user.id;
+    req.session.user_id = user.id;
     res.redirect("/urls");
   });
 });
@@ -142,10 +143,10 @@ app.post("/login", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     userID: null,
-    user: getUser(users, req.session["userId"]),
+    user: getUser(users, req.session["user_id"]),
   };
   // redirect to login page if no existing user is logged in
-  if (!req.session["userId"]) {
+  if (!req.session["user_id"]) {
     return res.redirect("/login");
   }
   res.render("urls_new", templateVars);
@@ -161,13 +162,19 @@ app.post("/urls/new", (req, res) => {
 
 // GET request to view and edit short url
 app.get("/urls/:shortURL", (req, res) => {
+  let currentUser = req.session["user_id"];
+  let userId = urlDatabase[req.params.shortURL].userID;
+  if (userId === currentUser) {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
     userID: urlDatabase[req.params.shortURL].userID,
-    user: getUser(users, req.session["userId"]),
+    user: getUser(users, req.session["user_id"]),
   };
-  res.render("urls_show", templateVars);
+  return res.render("urls_show", templateVars);
+} else {
+  return res.status(404).send("Url not found or invalid user");
+}
 });
 
 // GET request to use the created short URL
@@ -177,7 +184,6 @@ app.get("/u/:shortURL", (req, res) => {
   // Lets user be redirected to the actually link from the short URL
   if (urlDatabase[shortURL]) {
     const longURL = urlDatabase[shortURL].longURL;
-    console.log("long:",longURL);
     res.redirect(longURL);
   } else {
     // Returns message to let use know there is an issue with URL
@@ -189,7 +195,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/urls/:shortURL/edit", (req, res) => {
   const shortURL = req.params.shortURL;
   const newURL = req.body.newURL;
-  let currentUser = req.session["userId"];
+  let currentUser = req.session["user_id"];
   // condition to deny access if no user is logged in
   if (currentUser === urlDatabase[shortURL].userID) {
     urlDatabase[shortURL].longURL = newURL;
@@ -201,15 +207,21 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 
 // POST request to delete short url with delete button
 app.post("/urls/:shortURL/delete", (req, res) => {
+  let currentUser = req.session["user_id"];
+  let userId = urlDatabase[req.params.shortURL].userID;
+  if (userId === currentUser) {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
-  res.redirect("/urls");
+  return res.redirect("/urls");
+  } else {
+    return res.status(401).send("You are not authorized to perform this action");
+  }
 });
 
 // POST request for logging out and automatically brings us back to login page
 app.post("/logout", (req, res) => {
   req.session = null;
-  res.redirect("/login");
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {

@@ -1,3 +1,5 @@
+// DATA
+
 const urlDatabase = {
   "b2xVn2": {
     longURL: "http://www.lighthouselabs.ca",
@@ -16,6 +18,8 @@ const users = {
     password: "1234",
   },
 };
+
+// HELPER FUNCTIONS
 
 // Used to check whether e-mail matches with any existing e-mail
 const findEmail = (email, database) => {
@@ -48,6 +52,8 @@ const getUser = function (users, userId) {
   return users[userId];
 };
 
+
+// Modules exported 
 module.exports = {
   urlDatabase,
   users,
