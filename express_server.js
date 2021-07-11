@@ -32,10 +32,6 @@ app.use(
 );
 
 // GET request directly to homepage
-// app.get("/", (req, res) => {
-//   res.redirect("/urls");
-// });
-
 app.get("/", (req, res) => {
   const templateVars = {
     userID: null,
@@ -111,10 +107,13 @@ app.post("/register", (req, res) => {
         email,
         password: hash,
       };
-      res.redirect("/urls");
+      // Automatically logs user in and return to homepage
+      req.session.user_id = users[id].id;
+      return res.redirect("/urls");
     });
   });
 });
+
 
 // GET request for viewing of login page
 app.get("/login", (req, res) => {
