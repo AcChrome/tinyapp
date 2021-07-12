@@ -6,6 +6,7 @@ const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080;
+
 // imported helper functions
 const {
   urlDatabase,
@@ -16,11 +17,11 @@ const {
 } = require("./helpers");
 
 // View engine for rendering
-
 app.set("view engine", "ejs");
 
 // Dependency setups for use
 app.use(bodyParser.urlencoded({ extended: true }));
+
 // Using cookie-session as a middleware to manager user sessions
 app.use(morgan("dev"));
 app.use(
@@ -37,6 +38,7 @@ app.get("/", (req, res) => {
     userID: null,
     user: getUser(users, req.session["user_id"]),
   };
+
   // redirect to login page if no existing user is logged in
   if (req.session["user_id"]) {
     return res.redirect("/urls");
@@ -44,15 +46,18 @@ app.get("/", (req, res) => {
   res.render("login", templateVars);
 });
 
-
-// GET request to view homepage
+//GET request to view homepage
 app.get("/urls", (req, res) => {
   let currentUser = req.session["user_id"];
   let userUrl = {};
+
   // Only allows signed in user to view their own URL
   for (const short in urlDatabase) {
     if (urlDatabase[short].userID === currentUser) {
       userUrl[short] = urlDatabase[short].longURL;
+    } else {
+      // Return error when no user is logged in
+      return res.status(403).send("unauthorized access");
     }
   }
   const templateVars = {
@@ -62,7 +67,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// POST request page to view URLS made by current user 
+// POST request page to view URLS made by current user
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
   let longURL = req.body.longURL;
@@ -89,15 +94,18 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  
   // check if e-mail or password is valid
   if (!email || !password) {
     return res.status(403).send("e-mail or password is invalid");
   }
   const user = findEmail(email, users);
-  // Check if e-mail is used 
+  
+  // Check if e-mail is used
   if (user) {
     return res.status(403).send("email already used");
   }
+  
   // Creates a random user iq as well as hashes the password for security
   const id = generateRandomString();
   bcrypt.genSalt(10, (err, salt) => {
@@ -107,6 +115,7 @@ app.post("/register", (req, res) => {
         email,
         password: hash,
       };
+      
       // Automatically logs user in and return to homepage
       req.session.user_id = users[id].id;
       return res.redirect("/urls");
@@ -114,12 +123,12 @@ app.post("/register", (req, res) => {
   });
 });
 
-
 // GET request for viewing of login page
 app.get("/login", (req, res) => {
   const templateVars = {
     user: null,
   };
+  
   // Redirect to homepage after logged in successfully
   if (req.session["user_id"]) {
     return res.redirect("/urls");
@@ -137,11 +146,13 @@ app.post("/login", (req, res) => {
     return res.status(403).send("e-mail or password is invalid");
   }
   const user = findEmail(email, users);
+  
   // Check to see user exist, if not returns and error status
   if (!user) {
     return res.status(403).send("e-mail is not register");
   }
   bcrypt.compare(password, user.password, (err, result) => {
+    
     // Check to make sure password matches before logging in and redirecting user back to homepage
     if (!result) {
       return res.status(403).send("password is invalid");
@@ -157,6 +168,7 @@ app.get("/urls/new", (req, res) => {
     userID: null,
     user: getUser(users, req.session["user_id"]),
   };
+  
   // redirect to login page if no existing user is logged in
   if (!req.session["user_id"]) {
     return res.redirect("/login");
@@ -177,27 +189,28 @@ app.get("/urls/:shortURL", (req, res) => {
   let currentUser = req.session["user_id"];
   let userId = urlDatabase[req.params.shortURL].userID;
   if (userId === currentUser) {
-  const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
-    userID: urlDatabase[req.params.shortURL].userID,
-    user: getUser(users, req.session["user_id"]),
-  };
-  return res.render("urls_show", templateVars);
-} else {
-  return res.status(404).send("Url not found or invalid user");
-}
+    const templateVars = {
+      shortURL: req.params.shortURL,
+      longURL: urlDatabase[req.params.shortURL].longURL,
+      userID: urlDatabase[req.params.shortURL].userID,
+      user: getUser(users, req.session["user_id"]),
+    };
+    return res.render("urls_show", templateVars);
+  } else {
+    return res.status(404).send("Url not found or invalid user");
+  }
 });
 
 // GET request to use the created short URL
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  
+
   // Lets user be redirected to the actually link from the short URL
   if (urlDatabase[shortURL]) {
     const longURL = urlDatabase[shortURL].longURL;
     res.redirect(longURL);
   } else {
+    
     // Returns message to let use know there is an issue with URL
     return res.status(404).send("Url not found or invalid");
   }
@@ -208,6 +221,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   const shortURL = req.params.shortURL;
   const newURL = req.body.newURL;
   let currentUser = req.session["user_id"];
+  
   // condition to deny access if no user is logged in
   if (currentUser === urlDatabase[shortURL].userID) {
     urlDatabase[shortURL].longURL = newURL;
@@ -221,12 +235,15 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   let currentUser = req.session["user_id"];
   let userId = urlDatabase[req.params.shortURL].userID;
+  // Condition to allow access only if user is logged in
   if (userId === currentUser) {
-  const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  return res.redirect("/urls");
+    const shortURL = req.params.shortURL;
+    delete urlDatabase[shortURL];
+    return res.redirect("/urls");
   } else {
-    return res.status(401).send("You are not authorized to perform this action");
+    return res
+      .status(401)
+      .send("You are not authorized to perform this action");
   }
 });
 
