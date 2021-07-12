@@ -25,7 +25,6 @@
           <tr>
             <th scope="col">Short URL</th>
             <th scope="col">Long URL</th>
-            <th scope="col">User ID</th>
             <th scope="col">Edit</th>
             <th scope="col">Delete</th>
           </tr>
@@ -35,7 +34,6 @@
           <tr>
             <td><%= url %></td>
             <td><%= urls[url] %></td>
-            <td><%= user.id %></td>
             <td>
               <form method="GET" action="/urls/<%= url %>">
                 <button
