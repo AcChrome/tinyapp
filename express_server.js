@@ -46,7 +46,6 @@ app.get("/", (req, res) => {
   res.render("login", templateVars);
 });
 
-//GET request to view homepage
 app.get("/urls", (req, res) => {
   let currentUser = req.session["user_id"];
   let userUrl = {};
@@ -54,10 +53,10 @@ app.get("/urls", (req, res) => {
   // Only allows signed in user to view their own URL
   for (const short in urlDatabase) {
     
-    // if (urlDatabase[short].userID === currentUser) {
-    if (currentUser) {
+    if (urlDatabase[short].userID === currentUser) {
       userUrl[short] = urlDatabase[short].longURL;
-    } else {
+    } 
+    else if(!currentUser) {
       
       // Return error when no user is logged in
       return res.status(403).send("unauthorized access");
