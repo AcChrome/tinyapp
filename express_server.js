@@ -35,7 +35,6 @@ app.use(
 // GET request directly to homepage
 app.get("/", (req, res) => {
   const templateVars = {
-    userID: null,
     user: getUser(users, req.session["user_id"]),
   };
 
@@ -52,12 +51,9 @@ app.get("/urls", (req, res) => {
 
   // Only allows signed in user to view their own URL
   for (const short in urlDatabase) {
-    
     if (urlDatabase[short].userID === currentUser) {
       userUrl[short] = urlDatabase[short].longURL;
-    } 
-    else if(!currentUser) {
-      
+    } else if (!currentUser) {
       // Return error when no user is logged in
       return res.status(403).send("unauthorized access");
     }
@@ -71,13 +67,21 @@ app.get("/urls", (req, res) => {
 
 // POST request page to view URLS made by current user
 app.post("/urls", (req, res) => {
-  let shortURL = generateRandomString();
-  let longURL = req.body.longURL;
-  urlDatabase[shortURL] = {
-    longURL,
-    userID: req.session["user_id"],
-  };
-  res.redirect(`/urls/${shortURL}`);
+  
+  // Check for the users if they are logged in;
+  if (req.session["user_id"]) {
+    let shortURL = generateRandomString();
+    let longURL = req.body.longURL;
+    urlDatabase[shortURL] = {
+      longURL,
+      userID: req.session["user_id"],
+    };
+    res.redirect(`/urls/${shortURL}`);
+  } else {
+    
+    // If the user is not logged in
+    return res.status(403).send("unauthorized access please login");
+  }
 });
 
 // GET request to view registration page
@@ -154,7 +158,6 @@ app.post("/login", (req, res) => {
     return res.status(403).send("e-mail is not register");
   }
   bcrypt.compare(password, user.password, (err, result) => {
-    
     // Check to make sure password matches before logging in and redirecting user back to homepage
     if (!result) {
       return res.status(403).send("password is invalid");
@@ -167,7 +170,6 @@ app.post("/login", (req, res) => {
 // GET request to view page for making new URL
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    userID: null,
     user: getUser(users, req.session["user_id"]),
   };
 
@@ -183,6 +185,9 @@ app.post("/urls/new", (req, res) => {
   const shortURL = req.params.shortURL;
   const newURL = req.body.newURL;
   urlDatabase[shortURL].longURL = newURL;
+  if (newURL === "" || newURL === "http://") {
+    return res.status(403).send("Url cannot be empty");
+  }
   res.redirect("/urls");
 });
 
@@ -205,7 +210,9 @@ app.get("/urls/:shortURL", (req, res) => {
     };
     return res.render("urls_show", templateVars);
   } else {
-    return res.status(404).send("You are not authorized to perform this action");
+    return res
+      .status(404)
+      .send("You are not authorized to perform this action");
   }
 });
 
@@ -218,7 +225,6 @@ app.get("/u/:shortURL", (req, res) => {
     const longURL = urlDatabase[shortURL].longURL;
     res.redirect(longURL);
   } else {
-    
     // Returns message to let user know there is an issue with URL
     return res.status(404).send("Url not found or invalid");
   }
@@ -234,7 +240,9 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   if (currentUser === urlDatabase[shortURL].userID) {
     urlDatabase[shortURL].longURL = newURL;
   } else {
-    return res.status(403).send("You are not authorized to perform this action");
+    return res
+      .status(403)
+      .send("You are not authorized to perform this action");
   }
   res.redirect("/urls");
 });
@@ -250,7 +258,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     delete urlDatabase[shortURL];
     return res.redirect("/urls");
   } else {
-    return res.status(401).send("You are not authorized to perform this action");
+    return res
+      .status(401)
+      .send("You are not authorized to perform this action");
   }
 });
 
